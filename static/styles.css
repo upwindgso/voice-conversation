@@ -1,0 +1,83 @@
+body {
+    background-color: #333333;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+#chat {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+#conversation {
+    height: 400px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    border: 1px solid #555555;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#transcription {
+    margin-bottom: 20px;
+    font-style: italic;
+    color: #666;
+}
+
+.user-message {
+    background-color: #add8e6;
+    color: #000000;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    max-width: 80%;
+    word-wrap: break-word;
+    margin-left: auto;
+}
+
+.ai-message {
+    background-color: #555555;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    max-width: 80%;
+    word-wrap: break-word;
+    margin-right: auto;
+}
+
+.ai-thinking {
+    background-color: #676767;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    max-width: 80%;
+    word-wrap: break-word;
+    margin-right: auto;
+    animation: blink 1s infinite; /* Add a blinking animation */
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+
+
+#record-button {
+    padding: 10px 20px;
+    background-color: #555555;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+#record-button.active {
+    background-color: #ff7f7f;
+}
+

@@ -2,7 +2,7 @@
 
 This project is an AI-powered voice chat application built with **Flask**, **Socket.IO**, and **Google Speech-to-Text** and **Text-to-Speech APIs**. It allows users to interact with an AI assistant using voice commands. The AI responds verbally, and the conversation is displayed in a chat interface.
 
-As a 
+As a starting point ive loaded it with a system prompt designed for for simplifying plans and ideas.
 
 ## Features
 
@@ -10,7 +10,7 @@ As a
 - **AI Response:** The AI (powered by OpenAI's GPT-4) generates a response, which is converted to speech using Google Text-to-Speech.
 - **Real-Time Chat Interface:** The conversation is displayed in a chat interface with user and AI messages.
 - **Recording Indicator:** The record button changes color to indicate when recording is active.
-- **5-Minute Recording Limit:** Recording automatically stops after 5 minutes to prevent excessively long recordings.
+- **Chunking of inputs to prevent oveloading the buffer** Also has the artifact of breaking the speech up into natural breaks that required some jankiness to figure out when to invoke the llm
 
 ## Technologies Used
 

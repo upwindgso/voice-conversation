@@ -2,76 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Chat with AI</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> <!-- Include marked.js -->
-    <style>
-        body {
-            background-color: #333333; /* Charcoal background */
-            color: #ffffff; /* White text for contrast */
-            font-family: Arial, sans-serif;
-        }
-        #chat {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        #conversation {
-            height: 400px; /* Fixed height for conversation */
-            overflow-y: auto; /* Enable vertical scrolling */
-            margin-bottom: 20px;
-            border: 1px solid #555555;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        
-        #recordButton {
-        padding: 10px 20px;
-        background-color: #555555; /* Normal color */
-        color: #ffffff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        width: 100%;
-        transition: background-color 0.3s ease; /* Smooth transition */
-    }
-
-    #recordButton:active {
-        background-color: #777777;
-    }
-        /* Style for user inputs */
-        .user-message {
-            background-color: #add8e6; /* Light blue */
-            color: #000000; /* Black text for contrast */
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            max-width: 80%;
-            word-wrap: break-word;
-            margin-left: auto; /* Right-align */
-        }
-        /* Style for AI responses */
-        .ai-message {
-            background-color: #555555; /* Dark gray */
-            color: #ffffff; /* White text */
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            max-width: 80%;
-            word-wrap: break-word;
-            margin-right: auto; /* Left-align */
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Voice Conversation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 <body>
-    <div id="chat">
-        <div id="conversation"></div>
-        <div id="volumeIndicator">
-            <div id="volumeLevel"></div>
-        </div>
-        <button id="recordButton">Press space to START recording</button>
+    <div id="conversation">
+            <div id="transcript"></div>
     </div>
-    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    
+    <button id="record-button">Press space to RECORD</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

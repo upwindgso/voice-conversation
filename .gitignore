@@ -46,3 +46,7 @@ Thumbs.db
 
 *.mp3
 *.wav
+
+#prompting stuff
+make_prompt.py
+output.txt
