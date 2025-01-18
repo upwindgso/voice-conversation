@@ -13,7 +13,7 @@ import time
 import logging
 
 # Set up logging
-#logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # Load environment variables
@@ -23,21 +23,29 @@ load_env_files()
 # Initialize Flask and SocketIO
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Initialize Google Cloud and OpenAI clients
 speech_client = speech.SpeechClient()
 tts_client = texttospeech.TextToSpeechClient()
 
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
+#from langchain.memory import ConversationBufferMemory
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 # Initialize the OpenAI client
 llm = ChatOpenAI(
     model_name="gpt-4o-mini",
     temperature=0.3,
 )
+
+#use this to store an array of messages...manually append to it
+message_history = []
+
+#memory = ConversationBufferMemory()
+
 system_prompt = """
-You are my coworker who sits next to me in the same cubicle. We have worked in the same area for a long time and have a easy rapport.
+You are my coworker who sits next to me in the same cubicle. We have worked in the same area for a long time and have a easy rapport. You are a female Australian and have a very ocker way of speaking.
 <output_format priority=maximum>
 Your responses will be rendered verbally using Google Text-to-Speech so make sure you are very concise (as speech is normally more brief than written word).
 </output_format>
@@ -82,15 +90,30 @@ def text_to_speech(text):
     return response.audio_content
 
 # OpenAI GPT-4 function
-def generate_response(prompt):
+def generate_response(humanmessage):
+    
+    global message_history
 
+    prompt = ChatPromptTemplate.from_messages([
+        SystemMessage(content=system_prompt),
+        MessagesPlaceholder(variable_name="messages"),
+    ])
+
+    """
     messages = [
         SystemMessage(content=system_prompt),
         HumanMessage(content=prompt)
-    ]
-    response = llm.invoke(messages)
+    ]"""
 
-    logger.debug(f'generate_response: {response.content}')
+    message_history.append(HumanMessage(content=humanmessage))
+
+    chain = prompt | llm
+    
+    response = chain.invoke({"messages" : message_history})
+
+    message_history.append(AIMessage(content=response.content))
+
+    logger.debug(f'message_history: {message_history}')
 
     
     return response.content
@@ -192,8 +215,8 @@ def index():
 @socketio.on('audio_chunk')
 def handle_audio_chunk(data):
     logger.debug('audio_chunk')
-    with thread_lock:
-        audio_queue.put(data['chunk'])
+    #with thread_lock:
+    audio_queue.put(data['chunk'])
 
 @app.route('/favicon.ico')
 def favicon():

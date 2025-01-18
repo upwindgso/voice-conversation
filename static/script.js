@@ -6,13 +6,18 @@ let audioChunks = [];
 // Initialize MediaRecorder
 navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
+        console.log("media init")
         mediaRecorder = new MediaRecorder(stream);
         mediaRecorder.ondataavailable = event => {
+            console.log("ondataavailable")
             audioChunks.push(event.data);
         };
         mediaRecorder.onstop = () => {
+            
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm; codecs=opus' });
+            console.log("onstop")
             socket.emit('audio_chunk', { chunk: audioBlob });
+            console.log("audio_chunk emitted")
             audioChunks = [];
         };
     })
