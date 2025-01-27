@@ -31,9 +31,22 @@ body {
     padding: 10px;
     border-radius: 10px;
     margin-bottom: 10px;
-    max-width: 80%;
+    max-width: 60%;
     word-wrap: break-word;
     margin-left: auto;
+}
+
+.user-message-provisional {
+    background-color: #add8e6;
+    color: #4a4a4a;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    max-width: 60%;
+    word-wrap: break-word;
+    margin-left: auto;
+    font-style: italic;
+    animation: blink 1s infinite; /* Add a blinking animation */
 }
 
 .ai-message {
@@ -42,9 +55,22 @@ body {
     padding: 10px;
     border-radius: 10px;
     margin-bottom: 10px;
-    max-width: 80%;
+    max-width: 60%;
     word-wrap: break-word;
     margin-right: auto;
+}
+
+.ai-message-provisional {
+    background-color: #555555;
+    color: #4a4a4a;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    max-width: 60%;
+    word-wrap: break-word;
+    margin-right: auto;
+    font-style: italic;
+    animation: blink 1s infinite; /* Add a blinking animation */
 }
 
 .ai-thinking {
@@ -53,7 +79,7 @@ body {
     padding: 10px;
     border-radius: 10px;
     margin-bottom: 10px;
-    max-width: 80%;
+    max-width: 60%;
     word-wrap: break-word;
     margin-right: auto;
     animation: blink 1s infinite; /* Add a blinking animation */

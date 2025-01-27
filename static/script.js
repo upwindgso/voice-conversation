@@ -1,24 +1,25 @@
 const socket = io();
 
 let mediaRecorder;
-let audioChunks = [];
+
+let chunksize = 2000;
+let ai_is_thinking = false;
 
 // Initialize MediaRecorder
 navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
-        console.log("media init")
-        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder = new MediaRecorder(stream, {
+            mimeType: 'audio/webm; codecs=opus' // Set MIME type
+        });
         mediaRecorder.ondataavailable = event => {
-            console.log("ondataavailable")
-            audioChunks.push(event.data);
+            const reader = new FileReader();
+            reader.onload = () => {
+                socket.emit('audio_chunk', reader.result); // Send as ArrayBuffer
+            };
+            reader.readAsArrayBuffer(event.data);
         };
         mediaRecorder.onstop = () => {
-            
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm; codecs=opus' });
-            console.log("onstop")
-            socket.emit('audio_chunk', { chunk: audioBlob });
-            console.log("audio_chunk emitted")
-            audioChunks = [];
+            socket.emit('stop_recording'); // Notify server
         };
     })
     .catch(error => {
@@ -29,15 +30,18 @@ navigator.mediaDevices.getUserMedia({ audio: true })
 const recordButton = document.getElementById('record-button');
 recordButton.addEventListener('click', () => {
     if (mediaRecorder.state === 'inactive') {
-        mediaRecorder.start();
+        mediaRecorder.start(chunksize);
         recordButton.classList.add('active');
         recordButton.innerText = 'Press space to STOP';
+        socket.emit('start_recording'); // Notify server
+        displayResponse('', isAIMessage = false, speech_final=false, is_final=false); //placeholder to show that recording has begun
     } else {
         setTimeout(() => {
             mediaRecorder.stop();
             recordButton.classList.remove('active');
             recordButton.innerText = 'Press space to RECORD';
-        }, 500);  // 1000 milliseconds = 1 second
+            showThinkingBubble()
+        }, 1000);  // 1000 milliseconds = 1 second
     }
 });
 
@@ -45,15 +49,18 @@ recordButton.addEventListener('click', () => {
 document.addEventListener('keydown', event => {
     if (event.code === 'Space' && mediaRecorder) {
         if (mediaRecorder.state === 'inactive') {
-            mediaRecorder.start();
+            mediaRecorder.start(chunksize);
             recordButton.classList.add('active');
             recordButton.innerText = 'Press space to STOP';
+            socket.emit('start_recording'); // Notify server
+            displayResponse('', isAIMessage = false, speech_final=false, is_final=false); //placeholder to show that recording has begun
         } else {
             setTimeout(() => {
                 mediaRecorder.stop();
                 recordButton.classList.remove('active');
                 recordButton.innerText = 'Press space to RECORD';
-            }, 500);  // 1000 milliseconds = 1 second
+                showThinkingBubble()
+            }, 1000);  // 1000 milliseconds = 1 second
         }
     }
 });
@@ -64,60 +71,92 @@ function formatResponse(text) {
     return text;
 }
 
+function removeProvisionalResponses(){
+    document.querySelectorAll('.ai-message-provisional').forEach(element => {
+        element.remove();
+    });
+
+    document.querySelectorAll('.user-message-provisional').forEach(element => {
+        element.remove();
+    });
+}
 
 // Append to transcript
-function displayResponse(response, isAIMessage = false) {
-    hideThinkingBubble();
-    console.log(response + ' - ' + isAIMessage)
+function displayResponse(response, isAIMessage = false, speech_final, is_final) {
+    
+    removeThinkingBubble();
+    removeProvisionalResponses()
+    //console.log(isAIMessage + ": " + is_final + " / " + speech_final + " = " + response)
 
     const conversation = document.getElementById('conversation');
     const Response = document.createElement('div');
 
     if (isAIMessage){
-        Response.className = 'ai-message';
+        ai_is_thinking =false
+
+        if(speech_final){
+            //final response
+            Response.className = 'ai-message';
+        } else{
+            //interim response
+            Response.className = 'ai-message-provisional';
+        }
     } else {
-        Response.className = 'user-message';
+        if(speech_final){
+            Response.className = 'user-message';
+        } else{
+            Response.className = 'user-message-provisional';
+        }
+        
     }
     
+    
     Response.innerHTML = formatResponse(response);
+    
     conversation.appendChild(Response);
 
-    if(isAIMessage == false){
+    if(ai_is_thinking){
         showThinkingBubble()
-    };
+    }
+
     conversation.scrollTop = conversation.scrollHeight; // Scroll to the bottom
+
 }
 
 function showThinkingBubble() {
+    ai_is_thinking = true
 
-        const conversation = document.getElementById('conversation');
-        const thinkingBubble = document.createElement('div');
-        thinkingBubble.id = 'thinking-bubble';
-        thinkingBubble.className = 'ai-thinking';
-            
-        thinkingBubble.innerHTML = '...';
-        conversation.appendChild(thinkingBubble);
-        conversation.scrollTop = conversation.scrollHeight; // Scroll to the bottom
-    }
+    const conversation = document.getElementById('conversation');
+    const thinkingBubble = document.createElement('div');
+    thinkingBubble.id = 'thinking-bubble';
+    thinkingBubble.className = 'ai-thinking';
+        
+    thinkingBubble.innerHTML = '...';
+    conversation.appendChild(thinkingBubble);
+    conversation.scrollTop = conversation.scrollHeight; // Scroll to the bottom
+}
 
-function hideThinkingBubble() {
+function removeThinkingBubble() {
     document.querySelectorAll('.ai-thinking').forEach(element => {
-        element.style.display = 'none';
+        element.remove();
     });
 }
 
 // SocketIO events
-socket.on('transcription', data => {
+socket.on('human_response', data => {
     //const transcriptionElement = document.getElementById('transcript');
     //transcriptionElement.innerText = data.text;
-    displayResponse(data.text, isAIMessage = false);
+    displayResponse(data.text, isAIMessage = false, speech_final=data.speech_final, is_final=data.is_final);
     
 });
 
+
 socket.on('ai_response', data => {
-    displayResponse(data.text, isAIMessage = true);
+    displayResponse(data.text, isAIMessage = true,speech_final=true, is_final=true);
     const audio = new Audio(data.audio_url);
+
     audio.play();
+
     audio.onended = function() {
         fetch(`/delete_file?filename=${encodeURIComponent(data.audio_url.split('/').pop())}`, { method: 'DELETE' })
             .then(response => {

@@ -54,3 +54,40 @@ if __name__ == "__main__":
         else:
             print(f"{key}={value}")
 
+import enum
+
+
+import inspect
+import logging
+class Track:
+
+    critical = 50
+    error = 40
+    warning = 30
+    info = 20
+    debug = 10
+
+    def __init__(self,logger: logging.Logger):
+        
+        if not logger:
+            print("!! Track object not initialised with valid logger object")
+        self.logger = logger
+
+    def __call__(self, logging_level: int,message: str = ''):
+        """
+        Level   Numeric value   What it means / When to use it
+        logging.DEBUG       10  Detailed information, typically only of interest to a developer trying to diagnose a problem.
+        logging.INFO        20  Confirmation that things are working as expected.
+        logging.WARNING     30  An indication that something unexpected happened, or that a problem might occur in the near future (e.g. ‘disk space low’). The software is still working as expected.
+        logging.ERROR       40  Due to a more serious problem, the software has not been able to perform some function.
+        logging.CRITICAL    50  A serious error, indicating that the program itself may be unable to continue running."""
+
+        caller = inspect.stack()[1]
+        function_name = caller.function     
+
+        track = f"<{function_name}>"
+        if message != '':
+            track += f": {message}"
+
+        self.logger.log(logging_level, track)
+        pass
